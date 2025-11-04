@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PI_Calculator.Presenter;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -7,10 +8,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using static PI_Calculator.Contract.PIMissionContract;
 
 namespace PI_Calculator
 {
-    public class PIViewModel : INotifyPropertyChanged
+    public class PIViewModel : INotifyPropertyChanged, IPIView
     {
         public ObservableCollection<PIModel> Models { get; set; } = new ObservableCollection<PIModel>();
 
@@ -20,23 +22,30 @@ namespace PI_Calculator
 
         public int SampleSize { get; set; }
 
+        private IPIPresenter pIPresenter { get; set; }
         public PIViewModel()
         {
-            AddItemCommand = new RelayCommand<int>(AddMission);
+            pIPresenter = new PIPresenter(this);
+            AddItemCommand = new RelayCommand<int>(pIPresenter.AddMissionRequest);
         }
-        private async void AddMission(int input)
+        //private async void AddMission(int input)
+        //{
+        //    if (Models.Any(x => x.SampleSize == SampleSize))
+        //    {
+        //        return;
+        //    }
+        //    PIModel pIModel = new PIModel();
+        //    pIModel.SampleSize = input;
+        //    PIMission pIMission = new PIMission(SampleSize);
+        //    var result = await pIMission.Calculate();
+        //    pIModel.Time = result.Item1;
+        //    pIModel.Value = result.Item2;
+        //    Models.Add(pIModel);
+        //}
+
+        public void AddMissionResponse(PIModel result)
         {
-            if (Models.Any(x => x.SampleSize == SampleSize))
-            {
-                return;
-            }
-            PIModel pIModel = new PIModel();
-            pIModel.SampleSize = input;
-            PIMission pIMission = new PIMission(SampleSize);
-            var result = await pIMission.Calculate();
-            pIModel.Time = result.Item1;
-            pIModel.Value = result.Item2;
-            Models.Add(pIModel);
+            Models.Add(result);
         }
     }
 
