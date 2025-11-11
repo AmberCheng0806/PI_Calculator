@@ -19,7 +19,6 @@ namespace PI_Calculator
         public PIViewModel PIViewModel { get; set; } = new PIViewModel();
         public MainWindow()
         {
-            InitializeComponent();
             DataContext = PIViewModel;
         }
     }

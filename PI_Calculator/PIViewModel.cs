@@ -1,4 +1,5 @@
 ﻿using PI_Calculator.Presenter;
+using PropertyChanged;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -7,45 +8,50 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 using static PI_Calculator.Contract.PIMissionContract;
 
 namespace PI_Calculator
 {
-    public class PIViewModel : INotifyPropertyChanged, IPIView
+    [AddINotifyPropertyChangedInterface]
+    public class PIViewModel : IPIView
     {
-        public ObservableCollection<PIModel> Models { get; set; } = new ObservableCollection<PIModel>();
+        public ObservableCollection<PIModel>? Models { get; set; }
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        public ICommand AddItemCommand { get; set; }
+        public ICommand? AddItemCommand { get; set; }
 
         public int SampleSize { get; set; }
 
-        private IPIPresenter pIPresenter { get; set; }
+        private Timer? Timer { get; set; }
+
+        private IPIPresenter? pIPresenter { get; set; }
+
+        public string? Time { get; set; }
         public PIViewModel()
         {
+            Models = new ObservableCollection<PIModel>();
             pIPresenter = new PIPresenter(this);
-            AddItemCommand = new RelayCommand<int>(pIPresenter.AddMissionRequest);
+            pIPresenter.StartMission();
+            Timer = new Timer(state => Application.Current.Dispatcher.Invoke(() => pIPresenter.FetchCompleteMissions()), null, 0, 1000);
+            AddItemCommand = new RelayCommand<int>(pIPresenter.SendMissionRequest);
         }
-        //private async void AddMission(int input)
-        //{
-        //    if (Models.Any(x => x.SampleSize == SampleSize))
-        //    {
-        //        return;
-        //    }
-        //    PIModel pIModel = new PIModel();
-        //    pIModel.SampleSize = input;
-        //    PIMission pIMission = new PIMission(SampleSize);
-        //    var result = await pIMission.Calculate();
-        //    pIModel.Time = result.Item1;
-        //    pIModel.Value = result.Item2;
-        //    Models.Add(pIModel);
-        //}
+
 
         public void AddMissionResponse(PIModel result)
         {
             Models.Add(result);
+        }
+
+        public void RefreshUI(string time)
+        {
+            Time = time;
+        }
+
+        public void ShowAlert()
+        {
+            MessageBox.Show("Sample Size已存在");
         }
     }
 
