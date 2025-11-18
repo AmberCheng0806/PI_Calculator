@@ -10,28 +10,33 @@ namespace PI_Calculator
     internal class PIMission
     {
         public int SampleSize { get; set; }
-        public PIMission(int sampleSize) { SampleSize = sampleSize; }
+
+        public CancellationToken CancellationToken { get; set; }
+        public PIMission(int sampleSize, CancellationToken cancellationToken)
+        {
+            SampleSize = sampleSize; this.CancellationToken = cancellationToken;
+        }
         public async Task<(long, double)> Calculate()
         {
             object key = new object();
             int size = 1000;
             int count = (int)Math.Ceiling((double)SampleSize / size);
-            //Random rnd = new Random(Guid.NewGuid().GetHashCode());
             int circleNum = 0;
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            await Parallel.ForAsync(0, count, (i, token) =>
+            await Parallel.ForAsync(0, count, CancellationToken, (i, token) =>
             {
+                if (token.IsCancellationRequested) return ValueTask.CompletedTask;
                 if (i + 1 == count)
                 {
                     size = SampleSize - i * size;
                 }
-                Random rnd = new Random(Guid.NewGuid().GetHashCode());
+                //Random rnd = new Random(Guid.NewGuid().GetHashCode());
                 for (int j = 0; j < size; j++)
                 {
-                    double x = rnd.NextDouble();
-                    double y = rnd.NextDouble();
-                    if (Math.Pow(x, 2) + Math.Pow(y, 2) < 1) lock (key) circleNum++;
+                    double x = Random.Shared.NextDouble(); // rnd.NextDouble();
+                    double y = Random.Shared.NextDouble();
+                    if (Math.Pow(x, 2) + Math.Pow(y, 2) < 1) Interlocked.Increment(ref circleNum);// lock (key) circleNum++; 原子操作
                 }
                 return ValueTask.CompletedTask;
             });

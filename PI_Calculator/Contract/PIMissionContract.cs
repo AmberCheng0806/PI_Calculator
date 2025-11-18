@@ -11,15 +11,15 @@ namespace PI_Calculator.Contract
         public interface IPIView
         {
             void AddMissionResponse(PIModel result);
-            void RefreshUI(string time);
             void ShowAlert();
+            void ChangeEnable();
         };
         public interface IPIPresenter
         {
             /// <summary>
             /// 啟動執行緒任務，不斷接收來自 <see href="ConcurrentQueue"/> 請求的任務，並在背景執行計算
             /// </summary>
-            void StartMission();
+            Task StartMission();
 
             /// <summary>
             /// 傳入指定的 <see cref="sampleSize"/> 發一起一個計算PI的任務
@@ -35,7 +35,9 @@ namespace PI_Calculator.Contract
             /// <summary>
             /// 暫停執行緒任務，停止接收來自 <see href="ConcurrentQueue"/> 請求的任務
             /// </summary>
-            void StoptMission();
+            void StopMission();
+
+            void DeleteSampleSize(int SampleSize);
         };
     }
 }
